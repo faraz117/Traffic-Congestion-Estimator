@@ -1,0 +1,125 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+  h1 {color:red}
+  .odometer {
+    font-size: 50px;
+}
+.vertical {
+display:block;
+}
+.mapView
+{
+float:right;
+margin-right:265px;
+}
+#myImage
+{
+margin-right: 340px;
+}
+</style>
+<link rel="stylesheet" href="http://github.hubspot.com/odometer/themes/odometer-theme-car.css" />
+<script src="./js/odometer.js"></script>
+<script src="http://maps.googleapis.com/maps/api/js"> </script>
+<script>
+var map;
+var marker;
+var myCenter=new google.maps.LatLng(51.508742,-0.120850);
+function initialize()
+{
+
+var mapProp = {
+  center:myCenter,
+  zoom:15,
+  mapTypeId:google.maps.MapTypeId.ROADMAP
+  };
+
+map=new google.maps.Map(document.getElementById("googleMap"),mapProp);
+marker=new google.maps.Marker({
+  position:myCenter,
+  icon:'./img/markeryellow.png'
+  });
+
+marker.setMap(map);
+}
+
+google.maps.event.addDomListener(window, 'load', initialize);
+</script>
+<div class="vertical">
+<div><img src="./img/truck.png" alt="truck" style="width:100px;height:70px;"></img><div id="odometer1" class="odometer">000</div><div class ="mapView" id="googleMap" style="width:800px;height:380px;"></div></div>
+<div><img src="./img/van.png" alt="truck" style="width:100px;height:70px;"></img><div id="odometer2" class="odometer">000</div></div>
+<div><img src="./img/car.jpg" alt="truck" style="width:100px;height:70px;"></img><div id="odometer3" class="odometer">000</div></div>
+</div>
+<img  id= "myImage" class="mapView" src="frame.jpg" alt="" style="width:640px;height:480px;"></img>
+<!-- create an image div and reload it continuously to show video -->
+
+<script>
+var ltv_count=0;
+var htv_count=0;
+var mtv_count=0;
+var prev_count=0;
+var new_count=0;
+ function loadJSON() {   
+
+    var xobj = new XMLHttpRequest();
+        xobj.overrideMimeType("application/json");
+    xobj.open('GET', './data/demo_data.json', true); // Replace 'my_data' with the path to your file
+    xobj.onreadystatechange = function () {
+          if (xobj.readyState == 4 && xobj.status == "200") {
+            // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
+			var txt = xobj.responseText;
+			txt=txt.replace('[','');
+			txt=txt.replace(']','');
+			txt=JSON.parse(txt)
+			ltv_count=txt.ltvcount;
+			mtv_count=txt.mtvcount;
+			htv_count=txt.htvcount;
+			new_count=ltv_count+mtv_count+htv_count;
+			difference= new_count - prev_count;
+			prev_count=new_count;
+			if ( difference < 10)
+			{
+				marker=new google.maps.Marker({
+				position:myCenter,
+				icon:'./img/markergreen.png'
+				});
+
+				marker.setMap(map);	
+			}
+			if( difference > 10 && difference < 30)
+			{
+				marker=new google.maps.Marker({
+				position:myCenter,
+				icon:'./img/markeryellow.png'
+				});
+
+				marker.setMap(map);				
+			}
+			if(difference > 30)
+			{
+				marker=new google.maps.Marker({
+				position:myCenter,
+				icon:'./img/markerred.png'
+				});
+
+				marker.setMap(map);	
+			}
+			//[{"ltvcount": 18, "mtvcount": 1, "htvcount": 1}]
+          }
+    };
+    xobj.send(null);  
+ }
+ 
+ function load_count(){
+	loadJSON();
+    odometer1.innerHTML = htv_count;
+	odometer2.innerHTML = mtv_count;
+	odometer3.innerHTML = ltv_count;
+  }
+function load_frame(){
+   var image = document.getElementById('myImage');
+   image.src = "frame.jpg";
+}
+window.setInterval(function (){load_count()}, 4000);
+</script>
